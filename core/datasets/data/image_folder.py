@@ -31,22 +31,3 @@ def val_dataset(data_dir, transform=ImageNetValidationTransform):
 def test_dataset(data_dir, transform=ImageNetTestTransform):
     data_dir = os.path.join(data_dir, 'val')
     return datasets.ImageFolder(data_dir, transform)
-
-
-# # train dataset example for tiny-image-net
-# def train_dataset(data_dir, transform=TinyImageNetTrainTransform, **kwargs):
-#     train_dir = os.path.join(data_dir, 'train')
-#     return datasets.ImageFolder(train_dir, transform, **kwargs)
-#
-#
-# # val dataset example for tiny-image-net
-# def val_dataset(data_dir, transform=TinyImageNetvalidationTransform, **kwargs):
-#     val_dir = os.path.join(data_dir, 'val')
-#     return datasets.ImageFolder(val_dir, transform, **kwargs)
-#
-#
-# # test dataset example for tiny-image-net
-# def test_dataset(data_dir, transform=TinyImageNetTestTransform, **kwargs):
-#     # test_dir = os.path.join(data_dir, 'test')
-#     test_dir = os.path.join(data_dir, 'val')
-#     return datasets.ImageFolder(test_dir, transform, **kwargs)
