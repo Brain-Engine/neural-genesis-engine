@@ -61,7 +61,7 @@ def arg_parse():
                         help='number of nodes for distributed training')
     parser.add_argument('--rank', default=-1, type=int,
                         help='node rank for distributed training')
-    parser.add_argument('--dist-url', default='tcp://224.66.41.62:23456', type=str,
+    parser.add_argument('--dist-url', default='tcp://127.0.0.1:8889', type=str,
                         help='url used to set up distributed training')
     parser.add_argument('--dist-backend', default='nccl', type=str,
                         help='distributed backend')
@@ -78,11 +78,5 @@ def arg_parse():
     # add on args
     parser.add_argument('--in-shape', default=(3, 32, 32), nargs='+', type=int,
                         help='Input image.')
-    parser.add_argument('--pose_dim', default=4, type=int, help='Capsule pose.')
-    parser.add_argument('--routing-iter', default=3, type=int, help='Capsule routing iter.')
-    parser.add_argument('--capsule-arch', default=[64, 8, 16, 16, 5], nargs='+', type=int,
-                        help='Capsule arch.')
-    parser.add_argument('--routing-name-list', default=None, nargs='+', type=str,
-                        help='FPN routing.')
-    parser.add_argument('--backbone', default=None, type=str, help='BackBone.')
+
     return parser
