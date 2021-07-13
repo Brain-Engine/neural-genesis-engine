@@ -42,7 +42,6 @@ def main_worker(gpu, ngpus_per_node, args):
 
     else:
         print("=> creating model '{}'".format(args.arch))
-        # model = models.__dict__[args.arch](num_classes=args.classes, args=args)
         try:
             model = models.__dict__[args.arch](num_classes=args.classes, args=args)
         except TypeError:
@@ -73,10 +72,7 @@ def main_worker(gpu, ngpus_per_node, args):
 
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
-    # criterion = nn.MultiLabelSoftMarginLoss().cuda(args.gpu)
-
     adjust_learning_rate = get_scheduler_by_name(args.lr_scheduler)
-
     optimizer = torch.optim.SGD(model.parameters(), args.lr,
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
@@ -89,13 +85,12 @@ def main_worker(gpu, ngpus_per_node, args):
 
     cudnn.benchmark = True
 
-    # Data loading code
+    # load dataset
     train_dataset, val_dataset, test_dataset = get_data_by_name(args.data_format, data_dir=args.data)
 
-    # train data loader is here, distribute is support #
+    # train data loader is here, distribute support
     if args.distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
-        # val_sampler = torch.utils.data.distributed.DistributedSampler(val_dataset)
         val_sampler = None
     else:
         train_sampler = None
@@ -104,14 +99,13 @@ def main_worker(gpu, ngpus_per_node, args):
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
         num_workers=args.workers, pin_memory=True, sampler=train_sampler)
-    # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #
 
-    # val data loader is here #
+    # val data loader
     val_loader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=args.batch_size, shuffle=(val_sampler is None),
         num_workers=args.workers, pin_memory=True, sampler=val_sampler)
-    # ^^^^^^^^^^^^^^^^^^^^^^^ #
+
     if args.evaluate:
         validate(val_loader, model, criterion, args)
         return
@@ -122,10 +116,10 @@ def main_worker(gpu, ngpus_per_node, args):
             batch_size=args.batch_size, shuffle=False,
             num_workers=args.workers, pin_memory=True)
 
-        # validate(train_loader, model, criterion, args)
-        # print('TEST IN TRAIN SET')
-        # validate(val_loader, model, criterion, args)
-        # print('TEST IN VAL SET')
+        validate(train_loader, model, criterion, args)
+        print('TEST IN TRAIN SET')
+        validate(val_loader, model, criterion, args)
+        print('TEST IN VAL SET')
         validate(test_loader, model, criterion, args)
         print('TEST IN TEST SET')
         return
@@ -133,16 +127,12 @@ def main_worker(gpu, ngpus_per_node, args):
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
-            # val_sampler.set_epoch(epoch)
-        # adjust_learning_rate(optimizer, epoch, args)
-        adjust_learning_rate(optimizer, epoch, args)
 
+        adjust_learning_rate(optimizer, epoch, args)
         # train for one epoch
         train(train_loader, model, criterion, optimizer, epoch, args)
-
         # evaluate on validation set
         acc1 = validate(val_loader, model, criterion, args)
-
         # remember best acc@1 and save checkpoint
         is_best = acc1 > best_acc1
         best_acc1 = max(acc1, best_acc1)
